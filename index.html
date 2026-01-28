@@ -2,257 +2,237 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>6 HELLS: THE ULTIMATE TRPG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>6 HELLS: MOBILE FINAL</title>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: #000; color: #0f0; font-family: 'Courier New', 'Malgun Gothic', monospace; margin: 0; padding: 5px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* 모바일 최적화 레이아웃 */
-        #status-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 11px; border-bottom: 2px solid #030; padding: 5px; background: #010; text-align: center; }
-        #log-container { flex: 1; overflow-y: auto; padding: 12px; margin: 5px 0; background: rgba(0, 5, 0, 0.95); border: 1px solid #050; border-radius: 5px; position: relative; }
-        #log { font-size: 13.5px; line-height: 1.7; color: #ccc; }
+        /* 갤럭시 전체 화면 최적화 */
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            color: #0f0; 
+            font-family: 'Malgun Gothic', sans-serif; 
+            overflow: hidden; 
+        }
 
-        .boss-speech { color: #f0f; font-weight: bold; background: rgba(255, 0, 255, 0.1); padding: 5px; border-radius: 3px; display: block; margin: 5px 0; }
-        .erotic { color: #ff69b4; border-left: 3px solid #ff69b4; padding-left: 10px; margin: 10px 0; font-style: italic; }
-        .critical { color: #f00; font-weight: bold; text-shadow: 0 0 8px #f00; }
-        .hint-text { color: #ff0; background: #330; padding: 2px 4px; font-weight: bold; border: 1px dashed #ff0; }
-        .story-block { color: #0a0; font-size: 13px; margin: 10px 0; border-top: 1px solid #020; padding-top: 5px; }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* 갤럭시 주소창 대응 */
+            height: -webkit-fill-available;
+            padding: 10px;
+        }
 
-        #action-area { background: #010; border-radius: 10px; padding: 10px; border: 1px solid #030; }
-        #controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        button { background: #020; color: #0f0; border: 1px solid #0a0; border-radius: 6px; padding: 15px 5px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; height: 55px; }
+        /* 상태바: 가독성 높임 */
+        #status-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background: #010;
+            border: 1px solid #040;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        /* 로그 영역: 버튼에 가려지지 않게 유연하게 조정 */
+        #log-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(0, 10, 0, 0.95);
+            border: 1px solid #050;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #log p { margin: 8px 0; line-height: 1.6; font-size: 15px; color: #ccc; }
+
+        /* 하단 컨트롤러 영역: 무조건 하단에 고정 */
+        #action-area {
+            min-height: 160px;
+            background: #000;
+        }
+
+        #controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            height: 60px; /* 터치하기 쉬운 크기 */
+            background: #020;
+            color: #0f0;
+            border: 2px solid #0a0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         button:active { background: #0f0; color: #000; }
-        
-        input { width: 100%; background: #000; color: #0f0; border: 1px solid #0a0; padding: 15px; font-size: 15px; text-align: center; margin-bottom: 10px; border-radius: 5px; }
+
+        /* 특수 텍스트 효과 */
+        .critical { color: #f00; font-weight: bold; }
+        .erotic { color: #ff69b4; border-left: 3px solid #ff69b4; padding-left: 8px; }
+        .hint-text { color: #ff0; background: #330; padding: 0 5px; border-radius: 3px; }
+        .boss-speech { color: #f0f; font-weight: bold; font-style: italic; }
+
+        input {
+            width: 100%;
+            height: 55px;
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0a0;
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="status-bar">
-    <div>LAYER: <span id="area-val">1</span>/6</div>
-    <div>HP: <span id="timer-val">999</span></div>
-    <div>ITEM: <span id="inv-val">0</span></div>
-</div>
-
-<div id="log-container">
-    <div id="log">
-        <p class="critical" style="text-align:center;">[ 하드코어 뽕빨물 ]</p>
-        <p>어둠 속에서 무당의 방울 소리가 들립니다... 당신들은 이곳을 탈출할 수 있을까요? 아니면 보스들의 가학적인 노리개가 될까요?</p>
-        <p>참가할 희생자들의 이름을 입력하십시오 (최대 4명, 쉼표로 구분).</p>
+<div id="game-container">
+    <div id="status-bar">
+        <div>지옥: <span id="area-val">1</span>/6</div>
+        <div>시간: <span id="timer-val">999</span></div>
+        <div>템: <span id="inv-val">0</span></div>
     </div>
-</div>
 
-<div id="action-area">
-    <div id="setup">
-        <input type="text" id="name-input" placeholder="이름1, 이름2, 이름3, 이름4">
-        <button onclick="initGame()" style="width:100%;">피의 계약 체결 (시작)</button>
+    <div id="log-container">
+        <div id="log">
+            <p class="critical" style="text-align:center;">[ 육도윤회: 멸망의 미궁 ]</p>
+            <p>갤럭시 최적화 버전입니다. 4명의 플레이어 이름을 입력하고 지옥의 계약을 시작하세요.</p>
+        </div>
     </div>
-    <div id="controls" class="hidden"></div>
+
+    <div id="action-area">
+        <div id="setup">
+            <input type="text" id="name-input" placeholder="이름1, 이름2, 이름3, 이름4">
+            <button onclick="initGame()" style="width:100%;">미궁 입장</button>
+        </div>
+        <div id="controls" class="hidden"></div>
+    </div>
 </div>
 
 <script>
-    let players = [];
-    let inventory = [];
-    let timeLeft = 999;
-    let currentArea = 1;
-    let currentRoom = 1;
-    let areaCode = "";
-    let audioCtx = null;
+    let players = [], inventory = [], timeLeft = 999, currentArea = 1, currentRoom = 1, areaCode = "", audioCtx = null;
 
-    const stages = [
-        null,
-        {
-            name: "음탕한 무당 바리의 사당",
-            boss: "무당 '바리'",
-            story: "바리는 영생을 얻기 위해 마을 아이들의 성기를 도려내 제단에 바쳤습니다. 그 죄로 지옥에 떨어진 그녀는 이제 당신들의 정기를 탐합니다.",
-            killItem: "녹슨 제웅",
-            killText: "조사 중 찾은 '녹슨 제웅'에 바리의 피를 바르자, 그녀의 사지가 뒤틀리며 자신의 칼에 스스로 몸이 꿰뚫립니다!",
-            rooms: [
-                { d: "입구: 천장에 인피(人皮)로 만든 부적들이 날립니다.", opt: ["부적 찢기", "바닥 조사", "기도하기"] },
-                { d: "제단: 썩은 고기 냄새와 성적 흥분제가 섞인 연기가 자욱합니다.", opt: ["제단 뒤지기", "연기 마시기", "항아리 깨기"] }
-            ]
-        },
-        {
-            name: "육욕의 고문 선실",
-            boss: "심해의 '세이렌'",
-            story: "난파된 선원들의 사지를 촉수로 묶고 알을 낳아 번식하는 괴물입니다. 그녀의 노래는 거세되지 않은 자들을 미치게 합니다.",
-            killItem: "은빛 작살",
-            killText: "세이렌의 벌어진 아가리 안으로 '은빛 작살'을 박아넣자, 수천 마리의 새끼 촉수들이 비명을 지르며 터져나갑니다.",
-            rooms: [
-                { d: "침수된 통로: 허리까지 차오른 액체가 끈적하게 달라붙습니다.", opt: ["물속 더듬기", "벽면 조사", "동료와 밀착"] }
-            ]
-        },
-        {
-            name: "도살자의 가학실",
-            boss: "집행자 '잭'",
-            story: "살점을 얇게 저며 쾌락을 느끼는 살인마. 그는 당신들을 산 채로 박제해 영원한 오르가즘 속에 가두려 합니다.",
-            killItem: "마비 독침",
-            killText: "잭의 목덜미에 '마비 독침'을 꽂았습니다. 근육이 경직된 그의 몸 위로 거대한 단두대가 떨어져 몸을 반으로 가릅니다.",
-            rooms: [
-                { d: "냉동고: 거대한 갈고리에 동료와 닮은 고기들이 걸려있습니다.", opt: ["갈고리 확인", "박스 수색", "온도 조절"] }
-            ]
-        }
-        // ... (스테이지 4, 5, 6 데이터 추가 가능)
+    const stages = [null, 
+        { n: "무당 바리의 사당", b: "무당 바리", s: "남성의 정기를 빨아 영생을 유지하는 타락한 무당.", ki: "녹슨 제웅", kt: "제웅을 찌르자 바리의 하혈과 함께 그녀가 소멸합니다!", rooms: ["사당 입구", "피의 제단", "음란한 침실"] },
+        { n: "육욕의 선실", b: "세이렌", s: "촉수로 인간을 감싸 알을 낳는 심해의 지배자.", ki: "은빛 작살", kt: "작살이 박히자 세이렌의 자궁이 터지며 촉수들이 쏟아집니다!", rooms: ["침수 통로", "산란실"] }
     ];
 
-    function sfx(f, type='sine', dur=0.3, vol=0.1) {
+    function playSfx(f) {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + dur);
+        const g = audioCtx.createGain();
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.frequency.value = f;
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
     }
 
-    function addLog(msg, cls = '') {
+    function addLog(m, c='') {
         const log = document.getElementById('log');
         const p = document.createElement('p');
-        if (cls) p.className = cls;
-        p.innerHTML = `> ${msg}`;
+        if(c) p.className = c;
+        p.innerHTML = "> " + m;
         log.appendChild(p);
         document.getElementById('log-container').scrollTop = log.scrollHeight;
     }
 
     function initGame() {
-        const val = document.getElementById('name-input').value;
-        if (!val) return;
-        players = val.split(',').map(n => n.trim()).slice(0, 4);
+        const v = document.getElementById('name-input').value;
+        if(!v) return;
+        players = v.split(',').map(n => n.trim()).slice(0, 4);
         document.getElementById('setup').classList.add('hidden');
         document.getElementById('controls').classList.remove('hidden');
-        sfx(200, 'square', 0.5);
-        startTimer();
+        playSfx(200);
+        setInterval(() => { if(timeLeft > 0) { timeLeft--; document.getElementById('timer-val').innerText = timeLeft; } }, 1000);
         loadArea();
-    }
-
-    function startTimer() {
-        setInterval(() => {
-            if(timeLeft > 0) {
-                timeLeft--;
-                document.getElementById('timer-val').innerText = timeLeft;
-                if(timeLeft <= 0) die("시간 초과. 당신들은 보스의 노예로 영원히 박제되었습니다.");
-            }
-        }, 1000);
     }
 
     function loadArea() {
         currentRoom = 1;
         areaCode = Math.floor(1000 + Math.random() * 9000).toString();
-        const data = stages[currentArea] || {name: "미지의 심연", story: "끝을 알 수 없는 어둠입니다."};
         document.getElementById('area-val').innerText = currentArea;
-        addLog(`[LAYER ${currentArea}] ${data.name}`, 'critical');
-        addLog(`<div class='story-block'>${data.story}</div>`);
+        addLog(`[LAYER ${currentArea}] ${stages[currentArea].n}`, 'critical');
+        addLog(stages[currentArea].s);
         renderRoom();
     }
 
     function renderRoom() {
-        const stage = stages[currentArea];
-        if (!stage) { win(); return; }
-        
-        if (currentRoom <= stage.rooms.length) {
-            const roomData = stage.rooms[currentRoom - 1];
-            const p = players[Math.floor(Math.random() * players.length)];
-            addLog(`${p}님이 앞장서서 진입합니다. ${roomData.d}`);
-            updateButtons(roomData.opt.map(o => ({ t: o, f: "actionSearch" })));
+        const s = stages[currentArea];
+        if(currentRoom <= s.rooms.length) {
+            addLog(`${players[Math.floor(Math.random()*players.length)]}님이 ${s.rooms[currentRoom-1]}을(를) 조사합니다.`);
+            updateButtons(["철저한 수색", "은밀한 이동", "물건 뒤지기", "함정 해제"]);
         } else {
-            addLog(`<span class='boss-speech'>"기다리고 있었다... 네놈들의 육체와 영혼을 맛볼 시간을!"</span>`, 'erotic');
-            updateButtons([
-                { t: "암호 기믹 풀기", f: "actionSolve" },
-                { t: "아이템으로 처치", f: "actionItemKill" },
-                { t: "몸으로 유혹하기", f: "actionSubmit" },
-                { t: "필사의 탈출", f: "actionFight" }
-            ]);
+            addLog(`<span class='boss-speech'>"감히 이곳까지... 네놈들의 육체를 분해해주마!"</span>`, 'erotic');
+            updateButtons(["암호 입력", "아이템 사용", "굴복(R19)", "필사의 저항"]);
         }
     }
 
-    window.actionSearch = (btnText) => {
-        const p = players[Math.floor(Math.random() * players.length)];
-        sfx(600, 'sine', 0.1);
-        addLog(`${p}님이 '${btnText}' 행동을 취합니다...`);
-        
-        const rand = Math.random();
-        if (rand > 0.6) {
-            const hint = rand > 0.8 ? areaCode.substring(0,2)+"XX" : "XX"+areaCode.substring(2,4);
-            addLog(`벽면에 정액과 피로 쓰인 숫자 발견: <span class='hint-text'>${hint}</span>`, 'hint-info');
-            setTimeout(() => {
-                const hints = document.getElementsByClassName('hint-text');
-                if(hints.length > 0) hints[0].innerHTML = "[삭제됨]";
-            }, 3000);
-        } else if (rand > 0.3) {
-            const item = stages[currentArea].killItem;
-            inventory.push(item);
-            addLog(`<span class='critical'>[${item}]</span>을(를) 획득했습니다! 보스를 죽일 결정적 수단입니다.`);
-            document.getElementById('inv-val').innerText = inventory.length;
-        } else {
-            addLog(`${p}님이 기괴한 함정에 걸려 옷이 찢기고 상처를 입었습니다!`, 'erotic');
-            timeLeft -= 50;
-        }
-        currentRoom++;
-        setTimeout(renderRoom, 1000);
-    };
-
-    window.actionSolve = () => {
-        const code = prompt("기믹의 암호 4자리를 입력하세요.");
-        if (code === areaCode) {
-            sfx(1000, 'sine', 0.5);
-            addLog("기믹이 해제되며 보스가 자신의 함정에 걸려 폭사합니다!", "critical");
-            nextStage();
-        } else {
-            die("암호 실패. 보스가 당신들의 구멍이란 구멍은 모두 막아버렸습니다.");
-        }
-    };
-
-    window.actionItemKill = () => {
-        const stage = stages[currentArea];
-        if (inventory.includes(stage.killItem)) {
-            sfx(100, 'sawtooth', 0.8);
-            addLog(stage.killText, "critical");
-            nextStage();
-        } else {
-            addLog("필요한 아이템이 없습니다! 보스의 비웃음이 들립니다.", "erotic");
-            timeLeft -= 100;
-        }
-    };
-
-    window.actionSubmit = () => {
-        const p = players[Math.floor(Math.random() * players.length)];
-        addLog(`${p}님이 보스 앞에 무릎을 꿇고 스스로 몸을 바칩니다...`, 'erotic');
-        if (Math.random() > 0.6) {
-            addLog("보스가 당신의 관능적인 봉사에 만족하여 이번만 살려줍니다.");
-            nextStage();
-        } else {
-            die(`${p}님은 보스의 성욕을 채워주다 끝내 사지가 분리되어 죽었습니다.`);
-        }
-    };
-
-    function nextStage() {
-        currentArea++;
-        if (currentArea > 3) { win(); } // 예시로 3단계까지
-        else { setTimeout(loadArea, 2000); }
-    }
-
-    function updateButtons(btns) {
+    function updateButtons(list) {
         const ctrl = document.getElementById('controls');
         ctrl.innerHTML = '';
-        btns.forEach(b => {
-            const btn = document.createElement('button');
-            btn.innerText = b.t;
-            btn.onclick = () => window[b.f](b.t);
-            ctrl.appendChild(btn);
+        list.forEach(txt => {
+            const b = document.createElement('button');
+            b.innerText = txt;
+            b.onclick = () => handleAction(txt);
+            ctrl.appendChild(b);
         });
     }
 
-    function die(msg) {
-        sfx(50, 'square', 1.5);
-        document.body.innerHTML = `<div style='color:red; text-align:center; padding-top:100px;'><h1>BAD END</h1><p>${msg}</p><button onclick='location.reload()' style='width:200px;'>윤회하기</button></div>`;
+    function handleAction(txt) {
+        playSfx(400);
+        if(txt === "암호 입력") {
+            const a = prompt("4자리 암호:");
+            if(a === areaCode) { addLog("탈출 성공!", "critical"); nextStage(); }
+            else die("암호 실패. 당신들은 보스의 노리개가 됩니다.");
+        } else if(txt === "아이템 사용") {
+            if(inventory.includes(stages[currentArea].ki)) { addLog(stages[currentArea].kt, "critical"); nextStage(); }
+            else { addLog("아이템이 없습니다!", "critical"); timeLeft -= 100; }
+        } else if(txt === "굴복(R19)") {
+            if(Math.random() > 0.5) { addLog("보스가 당신의 봉사에 만족해 길을 비킵니다.", "erotic"); nextStage(); }
+            else die("보스는 당신을 죽을 때까지 유린했습니다.");
+        } else {
+            // 일반 수색 로직
+            const r = Math.random();
+            if(r > 0.6) {
+                const hint = r > 0.8 ? areaCode.substring(0,2)+"XX" : "XX"+areaCode.substring(2,4);
+                addLog(`벽면에 적힌 숫자: <span class='hint-text'>${hint}</span> (3초 후 소멸)`);
+                setTimeout(() => { document.querySelectorAll('.hint-text').forEach(e => e.innerText = "####"); }, 3000);
+            } else if(r > 0.3) {
+                inventory.push(stages[currentArea].ki);
+                addLog(`[${stages[currentArea].ki}] 획득!`);
+                document.getElementById('inv-val').innerText = inventory.length;
+            } else {
+                addLog("아무것도 찾지 못했고, 보이지 않는 손에 유린당합니다.", "erotic");
+            }
+            currentRoom++;
+            setTimeout(renderRoom, 800);
+        }
     }
 
-    function win() {
-        document.body.innerHTML = `<div style='color:#0f0; text-align:center; padding-top:100px;'><h1>TRUE ESCAPE</h1><p>당신들은 지옥의 보스들을 정복하고 탈출했습니다.</p></div>`;
+    function nextStage() {
+        currentArea++;
+        if(currentArea >= stages.length) {
+            document.body.innerHTML = "<h1 style='color:#0f0; text-align:center; margin-top:100px;'>완전한 탈출 성공</h1>";
+        } else loadArea();
+    }
+
+    function die(msg) {
+        document.body.innerHTML = `<div style='color:red; text-align:center; padding:50px 20px;'><h1>BAD END</h1><p>${msg}</p><button onclick='location.reload()' style='width:100%'>다시 시작</button></div>`;
     }
 </script>
 </body>
